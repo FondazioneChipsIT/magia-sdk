@@ -79,7 +79,7 @@ ifndef platform
 	$(error Proper formatting is: make run test=<test_name> platform=rtl|gvsoc)
 endif
 ifeq ($(platform), gvsoc)
-	$(GVSOC_DIR)/install/bin/gvsoc --target=magia-base --binary=./build/bin/$(test) --trace-level=trace run
+	$(GVSOC_DIR)/install/bin/gvsoc --target=magia --binary=./build/bin/$(test) --trace-level=trace run
 else ifeq ($(platform), rtl)
 	mkdir -p $(BUILD_DIR)
 	cp ./build/bin/$(test) $(BUILD_DIR)/verif
@@ -129,12 +129,12 @@ endif
 
 gvsoc:
 ifeq ($(target_platform), magia)
-	sed -i -E "s/^[[:space:]]*N_TILES_X[[:space:]]*=[[:space:]]*[0-9]+/    N_TILES_X           = $(tiles)/" $(GVSOC_DIR)/pulp/pulp/chips/magia_base/magia_arch.py
-	sed -i -E "s/^[[:space:]]*N_TILES_Y[[:space:]]*=[[:space:]]*[0-9]+/    N_TILES_Y           = $(tiles)/" $(GVSOC_DIR)/pulp/pulp/chips/magia_base/magia_arch.py
+	sed -i -E "s/^[[:space:]]*N_TILES_X[[:space:]]*=[[:space:]]*[0-9]+/    N_TILES_X           = $(tiles)/" $(GVSOC_DIR)/pulp/pulp/chips/magia/arch.py
+	sed -i -E "s/^[[:space:]]*N_TILES_Y[[:space:]]*=[[:space:]]*[0-9]+/    N_TILES_Y           = $(tiles)/" $(GVSOC_DIR)/pulp/pulp/chips/magia/arch.py
 else
 	$(error unrecognized platform (acceptable platform: magia).)
 endif
 	cd $(GVSOC_DIR)	&& \
 	git submodule update --init --recursive && \
-	make build TARGETS=magia-base DEBUG=1
+	make build TARGETS=magia DEBUG=1
 
