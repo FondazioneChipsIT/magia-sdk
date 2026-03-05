@@ -198,13 +198,16 @@ extern uint32_t eu_fsync_has_error(eu_controller_t *ctrl);
 
 /**
  * @brief Initialize Event Unit for Spatz events
+ * @param enable_irq If true, enable IRQ for Spatz completion
  */
 extern void eu_spatz_init(eu_controller_t *ctrl, uint32_t enable_irq);
 
 /**
- * @brief Wait for Spatz completion in WFE mode
+ * @brief Wait for Spatz completion using specified mode
+ * @param mode Wait mode (polling, WFE, etc.)
+ * @return Non-zero if Spatz completed, 0 if timeout/error
  */
-extern void eu_spatz_wait(eu_controller_t *ctrl, eu_wait_mode_t mode);
+extern uint32_t eu_spatz_wait(eu_controller_t *ctrl, eu_wait_mode_t mode);
 
 /**
  * @brief Check if Spatz has completed, non-blocking
@@ -236,7 +239,7 @@ struct eu_controller_api {
     uint32_t (*fsync_is_done) (eu_controller_t *ctrl);
     uint32_t (*fsync_has_error) (eu_controller_t *ctrl);
     void (*spatz_init) (eu_controller_t *ctrl, uint32_t enable_irq);
-    void (*spatz_wait) (eu_controller_t *ctrl, eu_wait_mode_t mode);
+    uint32_t (*spatz_wait) (eu_controller_t *ctrl, eu_wait_mode_t mode);
     uint32_t (*spatz_is_done) (eu_controller_t *ctrl);
 };
 

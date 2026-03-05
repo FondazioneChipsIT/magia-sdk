@@ -276,23 +276,42 @@ uint32_t eu32_fsync_has_error(eu_controller_t *ctrl) {
 //=============================================================================
 
 /**
+<<<<<<< HEAD
+ * @brief Initialize Event Unit for FSync events
+ * @param enable_irq If true, enable IRQ for FSync completion
+ */
+void eu32_spatz_init(eu_controller_t *ctrl, uint32_t enable_irq) {
+    // Enable FSync events in mask (bits 25:24)
+    eu_enable_events(EU_SPATZ_ALL_MASK);
+    
+    // Optionally enable IRQ for FSync completion (bit 24)
+=======
  * @brief Initialize Event Unit for Spatz events
  * @param enable_irq If true, enable IRQ for Spatz completion
  */
 void eu32_spatz_init(eu_controller_t *ctrl, uint32_t enable_irq) {
     eu_enable_events(EU_SPATZ_ALL_MASK);
 
+>>>>>>> sc/magia_v2/spatz_on_magia
     if (enable_irq) {
         eu_enable_irq(EU_SPATZ_DONE_MASK);
     }
 }
 
 /**
+<<<<<<< HEAD
+ * @brief Wait for Spatz completion using specified mode
+ * @param mode Wait mode (polling, WFE, etc.)
+ * @return Non-zero if Spatz completed, 0 if timeout/error
+ */
+uint32_t eu32_spatz_wait(eu_controller_t *ctrl, eu_wait_mode_t mode) {
+=======
  * @brief Wait for Spatz completion using specific mode
  * @param mode Wait mode (polling, WFE, etc.)
  * @return Non-zero if FSync completed, 0 if timeout/error
  */
 void eu32_spatz_wait(eu_controller_t *ctrl, eu_wait_mode_t mode) {
+>>>>>>> sc/magia_v2/spatz_on_magia
     uint32_t retval = eu_wait_events(EU_SPATZ_DONE_MASK, mode, 1000000);
     #if PROFILE_SNC == 1
     stnl_snc_f();
@@ -300,6 +319,8 @@ void eu32_spatz_wait(eu_controller_t *ctrl, eu_wait_mode_t mode) {
     return retval; // 1M cycle timeout
 }
 
+<<<<<<< HEAD
+=======
 /**
  * @brief Check if Spatz has completed, non-blocking
  * @return Non-zero if Spatz completed
@@ -307,6 +328,7 @@ void eu32_spatz_wait(eu_controller_t *ctrl, eu_wait_mode_t mode) {
 uint32_t eu32_spatz_is_done(eu_controller_t *ctrl) {
     return eu_check_events(EU_SPATZ_DONE_MASK);
 }
+>>>>>>> sc/magia_v2/spatz_on_magia
 
 extern void eu_init(eu_controller_t *ctrl)
     __attribute__((alias("eu32_init"), used, visibility("default")));
