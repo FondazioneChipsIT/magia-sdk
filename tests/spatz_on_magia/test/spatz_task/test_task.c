@@ -1,0 +1,160 @@
+#include "tile.h"
+#include "test_params.h"
+
+// #define LOGGING
+
+static inline uint16_t get_raw(const _Float16 val)
+{
+    uint16_t raw;
+    memcpy(&raw, &val, sizeof(raw));
+    return raw;
+}
+
+static inline void print_vector_raw(const _Float16 *vec, size_t len)
+{
+    for (size_t i = 0; i < len; i++) {
+        printf("%d) %x\n", i, get_raw(vec[i]));
+    }
+}
+
+/**********************************************************************************************************************/
+
+__attribute__((__noinline__)) static void test_vfmv_f_s(const _Float16 *src, const size_t len)
+{
+    const _Float16 *p_src;
+    _Float16 first;
+    size_t avl;
+    size_t vl;
+
+    p_src = src;
+    avl = len;
+
+    for (; avl > 0; avl -= vl) {
+        asm volatile ("vsetvli %0, %1, e16, m8, ta, ma" : "=r"(vl) : "r"(avl));
+        asm volatile ("vle16.v v0, (%0)" :: "r"(src));
+        asm volatile ("vfmv.f.s %0, v0" : "=f"(first));
+
+#ifdef  LOGGING
+        printf("fist: %x\n", get_raw(first));
+#endif
+        p_src += vl;
+    }
+
+}
+
+/**********************************************************************************************************************/
+
+static inline _Float16 _fsgnj_h(_Float16 val, _Float16 sign)
+{
+    _Float16 res;
+    asm volatile ("fsgnj.h %0, %1, %2" : "=f"(res) : "f"(val), "f"(sign));
+    return res;
+}
+
+__attribute__((__noinline__)) static void test_fsgnj_h()
+{
+    _Float16 a;
+    _Float16 b;
+    _Float16 r1;
+    _Float16 r2;
+
+    a = 5.0f;
+    b = -1.0f;
+
+    r1 = _fsgnj_h(a, b);
+    r2 = _fsgnj_h(b, a);
+
+#ifdef LOGGING
+    printf("a=%x\n", get_raw(a));
+    printf("b=%x\n", get_raw(b));
+    printf("r1=%x\n", get_raw(r1));
+    printf("r2=%x\n", get_raw(r2));
+#endif
+}
+
+/**********************************************************************************************************************/
+
+__attribute__((__noinline__)) static _Float16 scalar_vfredsum(const _Float16 *src, const size_t len)
+{
+    _Float16 sum;
+
+    sum = 0;
+    for (int i = 0; i < len; i++)
+        sum += src[i];
+
+    return sum;
+}
+
+__attribute__((__noinline__)) static _Float16 rvv_vfredsum(const _Float16 *src, const size_t len)
+{
+    _Float16 ZERO_f = 0.0f;
+    const _Float16 *p_src;
+    _Float16 sum;
+
+    size_t original_avl;
+    size_t avl;
+    size_t vl;
+
+    original_avl = len;
+    p_src = src;
+    avl = len;
+
+    asm volatile ("vsetvli %0, %1, e16, m8, ta, ma" : "=r"(vl) : "r"(avl));
+    asm volatile ("vfmv.v.f v0, %0" :: "f"(ZERO_f));
+    asm volatile ("vfmv.v.f v8, %0" :: "f"(ZERO_f));
+
+    for (; avl > 0; avl -= vl) {
+        asm volatile ("vsetvli %0, %1, e16, m8, ta, ma" : "=r"(vl) : "r"(avl));
+        asm volatile ("vle16.v v16, (%0)" :: "r"(p_src));
+        asm volatile ("vfadd.vv v0, v0, v16");
+
+        p_src += vl;
+    }
+
+    asm volatile ("vsetvli %0, %1, e16, m8, ta, ma" : "=r"(vl) : "r"(original_avl));
+    asm volatile ("vfredusum.vs v8, v0, v8");
+    asm volatile ("vfmv.f.s %0, v8" : "=f"(sum));
+
+    return sum;
+}
+
+__attribute__((__noinline__)) static void test_vfredsum(const _Float16 *src, const size_t len)
+{
+    _Float16 scalar_sum;
+    _Float16 rvv_sum;
+
+    scalar_sum = scalar_vfredsum(src, len);
+    rvv_sum = rvv_vfredsum(src, len);
+
+#ifdef LOGGING
+    if (scalar_sum != rvv_sum)
+        printf("vfredsum test Failed!\n");
+    else
+        printf("vfredsum test Success!\n");
+#endif
+
+}
+
+/*********************************************************************************************/
+
+int test_task(void)
+{
+    volatile test_params_t *params;
+    uintptr_t params_addr;
+    _Float16 *src;
+    size_t len;
+
+    params_addr = mmio32(SPATZ_DATA);
+    params = (volatile test_params_t *) params_addr;
+
+    src = (_Float16 *)params->addr_src;
+    len = params->len;
+
+    print_vector_raw(src, len);
+
+    test_vfmv_f_s(src, len);
+    test_fsgnj_h();
+    test_vfredsum(src, len);
+
+    return 0;
+}
