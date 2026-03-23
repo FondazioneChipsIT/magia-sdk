@@ -42,6 +42,7 @@ profile_cmp		?= 0
 profile_cmi		?= 0
 profile_cmo		?= 0
 profile_snc		?= 0
+VERBOSE			?= false
 
 target_platform ?= magia_v2
 compiler 		?= GCC_PULP
@@ -61,6 +62,8 @@ LLVM_JOBS			?= 8
 tiles_2 		:= $(shell echo $$(( $(tiles) * $(tiles) )))
 tiles_log    	:= $(shell awk 'BEGIN { printf "%.0f", log($(tiles_2))/log(2) }')
 tiles_log_real  := $(shell awk 'BEGIN { printf "%.0f", log($(tiles))/log(2) }')
+
+TIMESTAMP := $(shell date +%Y%m%d_%H%M%S)
 
 .PHONY: gvsoc
 
@@ -90,8 +93,13 @@ ifeq ($(compiler), GCC_MULTILIB)
 	sed -i -E 's/^#add_subdirectory\(flatatt\)/add_subdirectory\(flatatt\)/' ./tests/magia/mesh/CMakeLists.txt
 	sed -i -E 's/^\/\/#include "utils\/attention_utils.h"/#include "utils\/attention_utils.h"/' ./targets/$(target_platform)/include/tile.h
 endif
+ifeq ($(VERBOSE), false)
+	cmake -DTARGET_PLATFORM=$(target_platform) -DEVAL=$(eval) -DSTALLING=$(stalling) -DFSYNC_MM=$(fsync_mm) -DIDMA_MM=$(idma_mm) -DREDMULE_MM=$(redmule_mm) -DCOMPILER=$(compiler) -DPROFILE_CMP=$(profile_cmp) -DPROFILE_CMI=$(profile_cmi) -DPROFILE_CMO=$(profile_cmo) -DPROFILE_SNC=$(profile_snc) -DSPATZ_TESTS=$(spatz_tests) -DSPATZ_LLVM_PATH=$(LLVM_INSTALL_DIR) -B build
+	cmake --build build
+else
 	cmake -DTARGET_PLATFORM=$(target_platform) -DEVAL=$(eval) -DSTALLING=$(stalling) -DFSYNC_MM=$(fsync_mm) -DIDMA_MM=$(idma_mm) -DREDMULE_MM=$(redmule_mm) -DCOMPILER=$(compiler) -DPROFILE_CMP=$(profile_cmp) -DPROFILE_CMI=$(profile_cmi) -DPROFILE_CMO=$(profile_cmo) -DPROFILE_SNC=$(profile_snc) -DSPATZ_TESTS=$(spatz_tests) -DSPATZ_LLVM_PATH=$(LLVM_INSTALL_DIR) -B build --trace-expand
 	cmake --build build --verbose
+endif
 
 set_mesh:
 ifeq ($(tiles), 1)
@@ -142,7 +150,7 @@ ifndef platform
 	$(error Proper formatting is: make run_with_spatz test=<test_name> platform=rtl|gvsoc)
 endif
 ifeq ($(platform), gvsoc)
-	$(GVSOC_DIR)/install/bin/gvrun --target magia_v2 --work-dir $(GVSOC_ABS_PATH)/Documents/test --param binary=$(BIN_ABS_PATH)/$(test) run --attr magia/n_tiles_x=$(tiles) --attr magia/n_tiles_y=$(tiles) --attr magia_v2/spatz_romfile=$(BIN_ABS_PATH)/bootrom/spatz_init.bin --trace=insn:trace_test.txt
+	$(GVSOC_DIR)/install/bin/gvrun --target magia_v2 --work-dir $(GVSOC_ABS_PATH)/Documents/test --param binary=$(BIN_ABS_PATH)/$(test) run --attr magia/n_tiles_x=$(tiles) --attr magia/n_tiles_y=$(tiles) --attr magia_v2/spatz_romfile=$(BIN_ABS_PATH)/bootrom/spatz_init.bin --trace=insn:$(test)_$(TIMESTAMP).txt
 else ifeq ($(platform), rtl)
 	mkdir -p $(BUILD_DIR_ABS) && cd $(BUILD_DIR_ABS) && mkdir -p build
 	cp ./build/bin/$(test) $(BUILD_DIR_ABS)/build/verif
