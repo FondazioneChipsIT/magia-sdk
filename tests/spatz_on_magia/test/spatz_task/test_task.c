@@ -47,13 +47,6 @@ __attribute__((__noinline__)) static void test_vfmv_f_s(const _Float16 *src, con
 
 /**********************************************************************************************************************/
 
-static inline _Float16 _fsgnj_h(_Float16 val, _Float16 sign)
-{
-    _Float16 res;
-    asm volatile ("fsgnj.h %0, %1, %2" : "=f"(res) : "f"(val), "f"(sign));
-    return res;
-}
-
 __attribute__((__noinline__)) static void test_fsgnj_h()
 {
     _Float16 a;
@@ -64,14 +57,14 @@ __attribute__((__noinline__)) static void test_fsgnj_h()
     a = 5.0f;
     b = -1.0f;
 
-    r1 = _fsgnj_h(a, b);
-    r2 = _fsgnj_h(b, a);
+    asm volatile ("fsgnj.h %0, %1, %2" : "=f"(r1) : "f"(a), "f"(b));
+    asm volatile ("fsgnj.h %0, %1, %2" : "=f"(r2) : "f"(b), "f"(a));
 
 #ifdef LOGGING
-    printf("a=%x\n", get_raw(a));
-    printf("b=%x\n", get_raw(b));
-    printf("r1=%x\n", get_raw(r1));
-    printf("r2=%x\n", get_raw(r2));
+    printf("a=%x    (0x4500 -> +5.0)\n", get_raw(a));
+    printf("b=%x    (0xbc00 -> -1.0)\n", get_raw(b));
+    printf("r1=%x   (0xc500 -> -5.0)\n", get_raw(r1));
+    printf("r2=%x   (0x3c00 -> +1.0)\n", get_raw(r2));
 #endif
 }
 
