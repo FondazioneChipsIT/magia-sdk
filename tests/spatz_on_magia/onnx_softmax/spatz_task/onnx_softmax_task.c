@@ -15,7 +15,7 @@ static inline void print_vector_raw(const _Float16 *vec, size_t len)
     }
 }
 
-static __attribute__((noinline)) _Float16 find_max(const _Float16 *vec, size_t len)
+static inline _Float16 find_max(const _Float16 *vec, size_t len)
 {
     const _Float16 *p_vec;
     _Float16 max;
@@ -49,7 +49,7 @@ static __attribute__((noinline)) _Float16 find_max(const _Float16 *vec, size_t l
     return max;
 }
 
-static __attribute__((noinline)) _Float16 compute_exponential_sum_fastexp_scalar(const _Float16 *src, _Float16 *dst, size_t len, _Float16 max)
+static inline _Float16 compute_exponential_sum_fastexp_scalar(const _Float16 *src, _Float16 *dst, size_t len, _Float16 max)
 {
     _Float16 COEF = 1486.0f;
     _Float16 BIAS = 15360.0f;
@@ -80,11 +80,11 @@ static __attribute__((noinline)) _Float16 compute_exponential_sum_fastexp_scalar
  * COEF = 2^mantissa / ln(2) (mantissa = 10 for FP16), scales x to the FP16 exponent range.
  * BIAS = exponent_bias * 2^mantissa (bias = 15 for FP16), shifts the bits to approximate exp.
  */
-static __attribute__((noinline)) _Float16 compute_exponential_sum_fastexp(const _Float16 *src, _Float16 *dst, size_t len, _Float16 max)
+static inline _Float16 compute_exponential_sum_fastexp(const _Float16 *src, _Float16 *dst, size_t len, _Float16 max)
 {
-    _Float16 COEF = 1486.0f;
-    _Float16 BIAS = 15360.0f;
-    _Float16 ZERO_f = 0.0f;
+    register _Float16 COEF asm("f10") = 1486.0f;
+    register _Float16 BIAS asm("f11") = 15360.0f;
+    register _Float16 ZERO_f asm("f2") = 0.0f;
 
     const _Float16 *p_src;
     _Float16 *p_dst;
@@ -131,7 +131,7 @@ static __attribute__((noinline)) _Float16 compute_exponential_sum_fastexp(const 
     return sum;
 }
 
-static __attribute__((noinline)) void normalize(_Float16 *dst, size_t len, _Float16 sum)
+static inline void normalize(_Float16 *dst, size_t len, _Float16 sum)
 {
     _Float16 *p_dst;
     size_t avl;
