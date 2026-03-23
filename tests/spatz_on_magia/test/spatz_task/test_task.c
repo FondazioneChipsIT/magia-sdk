@@ -21,8 +21,8 @@ static inline void print_vector_raw(const _Float16 *vec, size_t len)
 
 __attribute__((__noinline__)) static void test_vfmv_f_s(const _Float16 *src, const size_t len)
 {
+    volatile _Float16 first;
     const _Float16 *p_src;
-    _Float16 first;
     size_t avl;
     size_t vl;
 
@@ -31,11 +31,14 @@ __attribute__((__noinline__)) static void test_vfmv_f_s(const _Float16 *src, con
 
     for (; avl > 0; avl -= vl) {
         asm volatile ("vsetvli %0, %1, e16, m8, ta, ma" : "=r"(vl) : "r"(avl));
-        asm volatile ("vle16.v v0, (%0)" :: "r"(src));
+        asm volatile ("vle16.v v0, (%0)" :: "r"(p_src));
         asm volatile ("vfmv.f.s %0, v0" : "=f"(first));
 
+        // asm volatile ("vmv.v.v v0, v0");                    /* dummy */
+        // asm volatile ("fmv.s f1, %0" :: "f"(first) : "f1"); /* dummy */
+
 #ifdef  LOGGING
-        printf("fist: %x\n", get_raw(first));
+        printf("fist: %x (expected: %x)\n", get_raw(first), get_raw(p_src[0]));
 #endif
         p_src += vl;
     }
@@ -112,7 +115,7 @@ __attribute__((__noinline__)) static _Float16 rvv_vfredsum(const _Float16 *src, 
     }
 
     asm volatile ("vsetvli %0, %1, e16, m8, ta, ma" : "=r"(vl) : "r"(original_avl));
-    asm volatile ("vfredusum.vs v8, v0, v8");
+    asm volatile ("vfredosum.vs v8, v0, v8");
     asm volatile ("vfmv.f.s %0, v8" : "=f"(sum));
 
     return sum;
@@ -155,7 +158,7 @@ int test_task(void)
     printf("[CC]\tSPATZ_DATA:\t%p\n", (void *) mmio32(SPATZ_DATA));
     printf("===========================================\n");
 
-    print_vector_raw(src, len);
+    // print_vector_raw(src, len);
 
     test_vfmv_f_s(src, len);
     test_fsgnj_h();

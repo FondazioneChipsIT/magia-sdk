@@ -36,7 +36,8 @@ static int init_data(void *params)
     test_params->addr_src = SRC_BASE;
     test_params->len = LEN;
 
-    print_vector_raw(test_params->addr_src, test_params->len);
+    printf("len: %d\n", test_params->len);
+    // print_vector_raw(test_params->addr_src, test_params->len);
 
     return 0;
 }
