@@ -85,7 +85,7 @@ __attribute__((__noinline__)) static _Float16 rvv_vfredsum(const _Float16 *src, 
 {
     _Float16 ZERO_f = 0.0f;
     const _Float16 *p_src;
-    _Float16 sum;
+    volatile _Float16 sum;
 
     size_t original_avl;
     size_t avl;
@@ -124,7 +124,7 @@ __attribute__((__noinline__)) static void test_vfredsum(const _Float16 *src, con
 
 #ifdef LOGGING
     if (scalar_sum != rvv_sum)
-        printf("vfredsum test Failed!\n");
+        printf("vfredsum test Failed! (computed: %x - expected: %x)\n", get_raw(rvv_sum), get_raw(scalar_sum));
     else
         printf("vfredsum test Success!\n");
 #endif
