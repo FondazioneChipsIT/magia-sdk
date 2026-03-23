@@ -1,8 +1,8 @@
 #ifndef TEST_H_
 #define TEST_H_
 
-#include "magia_tile_utils.h"
-#include "magia_utils.h"
+#include "data.h"
+#include "tile.h"
 #include "test_params.h"
 
 #define ALIGNMENT   4

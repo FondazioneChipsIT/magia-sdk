@@ -13,7 +13,7 @@ static inline uint16_t get_raw(const _Float16 val)
 static inline void print_vector_raw(const _Float16 *vec, size_t len)
 {
     for (size_t i = 0; i < len; i++) {
-        printf("%d) %x\n", i, get_raw(vec[i]));
+        printf("[CC]\t%d)\t%x\t(addr: %p)\n", i, get_raw(vec[i]), (void *)(vec + i));
     }
 }
 
@@ -149,6 +149,11 @@ int test_task(void)
 
     src = (_Float16 *)params->addr_src;
     len = params->len;
+
+    printf("===========================================\n");
+    printf("[CC]\tSPATZ_TASKBIN:\t%p\n", (void *) mmio32(SPATZ_TASKBIN));
+    printf("[CC]\tSPATZ_DATA:\t%p\n", (void *) mmio32(SPATZ_DATA));
+    printf("===========================================\n");
 
     print_vector_raw(src, len);
 

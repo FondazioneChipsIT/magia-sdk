@@ -2,11 +2,24 @@
 #include "eventunit.h"
 
 #include "compare_utils.h"
+#include "data.h"
 #include "test_mem_layout.h"
 #include "test_params.h"
 #include "test_task_bin.h"
 
-#define LEN 16
+static inline uint16_t get_raw(const float16 val)
+{
+    uint16_t raw;
+    memcpy(&raw, &val, sizeof(raw));
+    return raw;
+}
+
+static inline void print_vector_raw(const float16 *vec, size_t len)
+{
+    for (size_t i = 0; i < len; i++) {
+        printf("[CV32]\t%d)\t%x\t(addr: %p)\n", i, get_raw(vec[i]), (void *)(vec + i));
+    }
+}
 
 static int init_data(void *params)
 {
@@ -17,11 +30,13 @@ static int init_data(void *params)
     for(int i = 0; i < LEN; i++) {
         offset = i * sizeof(float16);
 
-        mmio_fp16(SRC_BASE + offset) = (float16) ((float)(i+1)/4.0f);
+        mmio_fp16(SRC_BASE + offset) = input_vec[i];
     }
 
     test_params->addr_src = SRC_BASE;
     test_params->len = LEN;
+
+    print_vector_raw(test_params->addr_src, test_params->len);
 
     return 0;
 }
@@ -39,6 +54,12 @@ static int run_spatz_task()
 
     eu_init(&eu_ctrl);
     eu_spatz_init(&eu_ctrl, 0);
+
+    printf("===========================================\n");
+    printf("[CV32]\tBINARY_START:\t%p\n", (void *) SPATZ_BINARY_START);
+    printf("[CV32]\t<>_TASK:\t%p\n", (void *) TEST_TASK);
+    printf("[CV32]\t<>_PARAMS_BASE:\t%p\n", (void *) TEST_PARAMS_BASE);
+    printf("===========================================\n");
 
     spatz_init(SPATZ_BINARY_START);
     spatz_run_task_with_params(TEST_TASK, TEST_PARAMS_BASE);

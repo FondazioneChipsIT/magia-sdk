@@ -2,7 +2,6 @@
 #define TEST_PARAMS_H
 
 #include <stdint.h>
-
 typedef struct {
     uintptr_t addr_src;
     uint32_t len;
