@@ -6,5 +6,5 @@
 # add_subdirectory(onnx_gelu)
 # add_subdirectory(onnx_layernorm)
 # add_subdirectory(onnx_relu)
-# add_subdirectory(onnx_softmax)
+add_subdirectory(onnx_softmax)
 add_subdirectory(test)
