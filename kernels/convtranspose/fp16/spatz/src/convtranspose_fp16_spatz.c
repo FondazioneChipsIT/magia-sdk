@@ -151,6 +151,11 @@ void MAGIA_convtranspose_fp16_spatz(const float16 *X, const float16 *W, float16 
     int ret;
     volatile convtranspose_fp16_spatz_params_t *params;
 
+    printf("output_shape[0]: %u\n", output_shape[0]);
+    printf("output_shape[1]: %u\n", output_shape[1]);
+    printf("output_shape[2]: %u\n", output_shape[2]);
+    printf("output_shape[3]: %u\n", output_shape[3]);
+
     ret = alloc_l1(&params, input_shape, output_shape, kernel_h, kernel_w, stride_h, stride_w, pad_h, pad_w, num_groups);
     if (ret != 0) {
         printf("[CV32 (%d)] L1 allocation failed with error: %d\n", HID, ret);

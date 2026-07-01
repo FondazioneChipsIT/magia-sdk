@@ -102,8 +102,8 @@ ifeq ($(compiler), GCC_MULTILIB)
 	sed -i -E 's/^#add_subdirectory\(flatatt\)/add_subdirectory\(flatatt\)/' ./tests/magia/mesh/CMakeLists.txt
 	sed -i -E 's/^\/\/#include "utils\/attention_utils.h"/#include "utils\/attention_utils.h"/' ./targets/$(target_platform)/include/tile.h
 endif
-	cmake -DTARGET_PLATFORM=$(target_platform) -DEVAL=$(eval) -DSTALLING=$(stalling) -DFSYNC_MM=$(fsync_mm) -DIDMA_MM=$(idma_mm) -DREDMULE_MM=$(redmule_mm) -DCOMPILER=$(compiler) -DPROFILE_CMP=$(profile_cmp) -DPROFILE_CMI=$(profile_cmi) -DPROFILE_CMO=$(profile_cmo) -DPROFILE_SNC=$(profile_snc) -DSPATZ_TESTS=$(spatz_tests) -DSPATZ_LLVM_PATH=$(LLVM_INSTALL_DIR) -B $(CMAKE_BUILDDIR) --trace-expand
-	cmake --build $(CMAKE_BUILDDIR) --verbose
+	cmake -DTARGET_PLATFORM=$(target_platform) -DEVAL=$(eval) -DSTALLING=$(stalling) -DFSYNC_MM=$(fsync_mm) -DIDMA_MM=$(idma_mm) -DREDMULE_MM=$(redmule_mm) -DCOMPILER=$(compiler) -DPROFILE_CMP=$(profile_cmp) -DPROFILE_CMI=$(profile_cmi) -DPROFILE_CMO=$(profile_cmo) -DPROFILE_SNC=$(profile_snc) -DSPATZ_TESTS=$(spatz_tests) -DSPATZ_LLVM_PATH=$(LLVM_INSTALL_DIR) -B $(CMAKE_BUILDDIR)
+	cmake --build $(CMAKE_BUILDDIR)
 
 set_mesh:
 ifeq ($(tiles), 1)

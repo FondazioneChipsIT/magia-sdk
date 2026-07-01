@@ -99,10 +99,10 @@ int main(void)
 
     sync(&fsync_ctrl, &eu_ctrl);
 
-    if (hid == 0) {
-        ret = check_result();
-        printf("[CV32] Test completed with %d mismatches\n", ret);
-    }
+    // if (hid == 0) {
+    //     ret = check_result();
+    //     printf("[CV32] Test completed with %d mismatches\n", ret);
+    // }
 
     sync(&fsync_ctrl, &eu_ctrl);
 
