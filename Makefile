@@ -69,6 +69,10 @@ profile_cmi		?= 0
 profile_cmo		?= 0
 profile_snc		?= 0
 
+enable_node_profiling	?=
+NODE_PROFILING_FLAGS	:= $(if $(enable_node_profiling),-DENABLE_NODE_PROFILING,)
+layer_depth		?= 2
+
 target_platform ?= magia_v3
 control_core 	?= CV32E40P
 compiler 		?= GCC_MULTILIB
@@ -175,7 +179,7 @@ endif
 ifeq ($(compiler), LLVM)
 	$(error COMING SOON!)
 endif
-	$(CMAKE) -DTARGET_PLATFORM=$(target_platform) -DTILES=$(tiles) -DEVAL=$(eval) -DSTALLING=$(stalling) -DFSYNC_MM=$(fsync_mm) -DIDMA_MM=$(idma_mm) -DREDMULE_MM=$(redmule_mm) -DCOMPILER=$(compiler) -DCONTROL_CORE=$(control_core) -DPROFILE_CMP=$(profile_cmp) -DPROFILE_CMI=$(profile_cmi) -DPROFILE_CMO=$(profile_cmo) -DPROFILE_SNC=$(profile_snc) -DSPATZ_TESTS=$(spatz) -DPULP_TESTS=$(pulp_cluster) -DPULP_CORE_COUNT=$(pulp_cores) -DPULP_CLUSTER=$(pulp_cluster) -B $(CMAKE_BUILDDIR) $(if $(filter 1,$(verbose)),--trace-expand,)
+	$(CMAKE) -DTARGET_PLATFORM=$(target_platform) -DTILES=$(tiles) -DEVAL=$(eval) -DSTALLING=$(stalling) -DFSYNC_MM=$(fsync_mm) -DIDMA_MM=$(idma_mm) -DREDMULE_MM=$(redmule_mm) -DCOMPILER=$(compiler) -DCMAKE_C_FLAGS="$(NODE_PROFILING_FLAGS)" -DCONTROL_CORE=$(control_core) -DPROFILE_CMP=$(profile_cmp) -DPROFILE_CMI=$(profile_cmi) -DPROFILE_CMO=$(profile_cmo) -DPROFILE_SNC=$(profile_snc) -DSPATZ_TESTS=$(spatz) -DPULP_TESTS=$(pulp_cluster) -DPULP_CORE_COUNT=$(pulp_cores) -DPULP_CLUSTER=$(pulp_cluster) -B $(CMAKE_BUILDDIR) $(if $(filter 1,$(verbose)),--trace-expand,)
 	$(CMAKE) --build $(CMAKE_BUILDDIR) $(if $(filter 1,$(verbose)),--verbose,) $(if $(test),--target $(test),) -- --no-print-directory
 
 set_mesh:
@@ -477,10 +481,11 @@ endif
 
 # enable per node execution trace in each template
 # e.g: Running node: <name> <op>
+# (for per-node cycle profiling add enable_node_profiling=1)
 ifdef enable_node_logs
-	python3 deployment/generate_with_spatz.py -t $(test) -vv --enable-node-logs
+	python3 deployment/generate_with_spatz.py -t $(test) -vv --layer-depth $(layer_depth) --enable-node-logs
 else
-	python3 deployment/generate_with_spatz.py -t $(test) -vv
+	python3 deployment/generate_with_spatz.py -t $(test) -vv --layer-depth $(layer_depth)
 endif
 
 # MAGIA V2 needs GCC_PULP
